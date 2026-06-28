@@ -504,7 +504,3 @@ flows = {
 
 st.markdown("## 🗺️ EMS Single‑Line Grid Model")
 st.markdown(render_ems_grid_animated(node, flows), unsafe_allow_html=True)
-
-
-st.markdown("## 🗺️ Realistic Grid Model")
-st.markdown(render_realistic_grid(node, flows), unsafe_allow_html=True)
