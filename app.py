@@ -42,8 +42,8 @@ def get_irradiance_curve(mode):
 # -----------------------------
 # STREAMLIT UI
 # -----------------------------
-st.set_page_config(page_title="Alex's Grid Simulation Dashboard", layout="wide")
-st.title("⚡ Alex's Multi‑Node Grid Simulation Dashboard")
+st.set_page_config(page_title="Grid Simulation Dashboard", layout="wide")
+st.title("⚡ Multi‑Node Grid Simulation Dashboard")
 
 # -----------------------------
 # CONTROL DASHBOARD (SIDEBAR)
@@ -205,7 +205,8 @@ history = run_simulation(
 # -----------------------------
 # DIGITAL METER READINGS
 # -----------------------------
-latest = history[-1]
+latest_index = st.sidebar.slider("Hour for meter readings", 0, 23, 12)
+latest = history[latest_index]
 node = latest["nodes"][node_index]
 
 st.markdown("## 🔌 Digital Meter Readings")
@@ -317,13 +318,15 @@ with col_flows:
 st.markdown("## 🔄 Energy Flow Animation")
 
 # Extract latest values
-pv1 = node["pv1_kw"]
-pv2 = node["pv2_kw"]
-pv_total = pv1 + pv2
+pv_to_load = latest["pv_to_load_kw"]
+pv_to_battery = latest["pv_to_battery_kw"]
+pv_to_grid = latest["pv_to_grid_kw"]
+
 load_kw = node["load_kw"]
 gi = node["grid_import_kw"]
 ge = node["grid_export_kw"]
 soc_pct = node["battery_soc"]
+
 
 # Determine flow directions
 arrow_pv_load = "➡️" if pv_total > 0 else "⛔"
@@ -338,9 +341,10 @@ colA, colB = st.columns(2)
 
 with colA:
     st.markdown("### ☀️ PV Flows")
-    st.markdown(f"PV → Load: {arrow_pv_load}  **{min(pv_total, load_kw):.2f} kW**")
-    st.markdown(f"PV → Battery: {arrow_pv_batt}  **{max(0, pv_total - load_kw):.2f} kW**")
-    st.markdown(f"PV → Grid: {arrow_pv_grid}  **{ge:.2f} kW**")
+    st.markdown(f"PV → Load: ➡️ **{pv_to_load:.2f} kW**")
+    st.markdown(f"PV → Battery: ➡️ **{pv_to_battery:.2f} kW**")
+    st.markdown(f"PV → Grid: ➡️ **{pv_to_grid:.2f} kW**")
+
 
 with colB:
     st.markdown("### 🔋 & 🔌 Other Flows")
