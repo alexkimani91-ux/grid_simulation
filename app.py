@@ -93,6 +93,7 @@ soc_max_ui = st.sidebar.slider(
     value=80,
     step=1
 )
+
 def render_battery_svg(soc_pct: float) -> str:
     soc = max(0, min(100, soc_pct))
 
@@ -105,13 +106,12 @@ def render_battery_svg(soc_pct: float) -> str:
 
     fill_width = int(inner_width * soc / 100)
 
-    # MATCH YOUR STREAMLIT COLOR LOGIC
     if soc <= 25:
-        color = "#e74c3c"   # red
+        color = "#e74c3c"
     elif soc >= 75:
-        color = "#2ecc71"   # green
+        color = "#2ecc71"
     else:
-        color = "#f1c40f"   # yellow
+        color = "#f1c40f"
 
     svg = f"""
     <svg width="140" height="50" xmlns="http://www.w3.org/2000/svg">
@@ -179,6 +179,9 @@ scenario = st.sidebar.selectbox(
     ]
 )
 
+# -----------------------------
+# TOPOLOGY SVG
+# -----------------------------
 def render_ems_grid_topology(history, latest_index, num_nodes):
     latest = history[latest_index]
 
@@ -199,7 +202,6 @@ def render_ems_grid_topology(history, latest_index, num_nodes):
   <text x="180" y="530" text-anchor="middle" font-size="18">Grid</text>
 """
 
-    # Lay out nodes horizontally
     x_start = 350
     x_step = 250
     y_bus = 450
@@ -211,23 +213,17 @@ def render_ems_grid_topology(history, latest_index, num_nodes):
         pv = node_data["pv1_kw"] + node_data["pv2_kw"]
         load = node_data["load_kw"]
         soc = node_data["battery_soc"]
+        batt_fill = int(60 * soc / 100)
 
-        # Line from grid to node
         svg += f"""
   <!-- Line Grid → Node {i+1} -->
-  <line x1="{100 + 160}" y1="{450}" x2="{x}" y2="{y_bus}"
+  <line x1="{260}" y1="450" x2="{x}" y2="{y_bus}"
         stroke="#444" stroke-width="6" marker-end="url(#arrow)"/>
-"""
 
-        # Node bus
-        svg += f"""
   <!-- Node {i+1} bus -->
   <circle cx="{x}" cy="{y_bus}" r="14" fill="#444"/>
   <text x="{x}" y="{y_bus - 30}" text-anchor="middle" font-size="16">Node {i+1}</text>
-"""
 
-        # Household + PV
-        svg += f"""
   <!-- Household + PV at Node {i+1} -->
   <polygon points="{x-40},{y_bus-140} {x+40},{y_bus-140} {x},{y_bus-180}"
            fill="#e0e0e0" stroke="#333" stroke-width="3"/>
@@ -237,17 +233,14 @@ def render_ems_grid_topology(history, latest_index, num_nodes):
         fill="#fff" stroke="#333"/>
   <rect x="{x-35}" y="{y_bus-160}" width="70" height="15"
         fill="#f7e27c" stroke="#333" stroke-width="2"/>
-  <text x="{x}" y="{y_bus-200}" text-anchor="middle" font-size="12">House + PV</text>
+  <text x="{x}" y="{y_bus-200}" text-anchor="middle" font-size="12">House + PV ({pv:.1f} kW)</text>
 
   <line x1="{x}" y1="{y_bus-140}" x2="{x}" y2="{y_bus}"
         stroke="#2ecc71" stroke-width="4" stroke-dasharray="10 8"
         marker-end="url(#arrow)">
     <animate attributeName="stroke-dashoffset" from="20" to="0" dur="1s" repeatCount="indefinite"/>
   </line>
-"""
 
-        # Industry
-        svg += f"""
   <!-- Industry at Node {i+1} -->
   <rect x="{x-45}" y="{y_bus+40}" width="90" height="60"
         fill="#cfcfcf" stroke="#333" stroke-width="3"/>
@@ -257,15 +250,11 @@ def render_ems_grid_topology(history, latest_index, num_nodes):
         fill="#cfcfcf" stroke="#333"/>
   <rect x="{x+5}" y="{y_bus}" width="12" height="40"
         fill="#cfcfcf" stroke="#333"/>
-  <text x="{x}" y="{y_bus+120}" text-anchor="middle" font-size="12">Industry</text>
+  <text x="{x}" y="{y_bus+120}" text-anchor="middle" font-size="12">Industry ({load:.1f} kW)</text>
 
   <line x1="{x}" y1="{y_bus}" x2="{x}" y2="{y_bus+40}"
         stroke="#444" stroke-width="4" marker-end="url(#arrow)"/>
-"""
 
-        # Battery
-        batt_fill = int(60 * soc / 100)
-        svg += f"""
   <!-- Battery at Node {i+1} -->
   <rect x="{x-60}" y="{y_bus+150}" width="120" height="60"
         fill="#fafafa" stroke="#333" stroke-width="3"/>
@@ -312,11 +301,9 @@ node_index = st.sidebar.selectbox(
 
 irradiance_curve = get_irradiance_curve(irradiance_mode)
 
-# Apply control dashboard effects to inputs (where possible)
 effective_households = int(households * household_multiplier)
 effective_industries = int(industries * industry_multiplier)
 
-# Simple PV enable logic: if both disabled, PV = 0
 effective_pv_kw = pv_kw
 if not pv1_enabled and not pv2_enabled:
     effective_pv_kw = 0
@@ -333,7 +320,7 @@ controls = {
     "grid_enabled": grid_enabled,
     "grid_import_price": grid_import_price_ui,
     "grid_export_price": grid_export_price_ui,
-    "scenario": scenario,  # reserved for future logic
+    "scenario": scenario,
 }
 
 # -----------------------------
@@ -374,8 +361,6 @@ with colD:
     soc_pct = node["battery_soc"]
     st.markdown(render_battery_svg(soc_pct), unsafe_allow_html=True)
     st.caption("Battery SOC")
-
-
 
 with colE:
     st.metric("Grid Contribution (kW)", f"{latest['grid_contribution_kw']:.2f}")
@@ -452,45 +437,8 @@ with col_flows:
     st.markdown(f"🔌 Grid export: {ge:.2f} kW")
 
 # -----------------------------
-# ENERGY FLOW ANIMATION PANEL
+# GRID TOPOLOGY VIEW
 # -----------------------------
-st.markdown("## 🔄 Energy Flow Animation")
-
-# Extract latest values
-pv_to_load = latest["pv_to_load_kw"]
-pv_to_battery = latest["pv_to_battery_kw"]
-pv_to_grid = latest["pv_to_grid_kw"]
-
-load_kw = node["load_kw"]
-gi = node["grid_import_kw"]
-ge = node["grid_export_kw"]
-soc_pct = node["battery_soc"]
-
-
-# Determine flow directions
-arrow_pv_load = "➡️" if pv_total > 0 else "⛔"
-arrow_pv_batt = "➡️" if pv_total > load_kw else "⛔"
-arrow_pv_grid = "➡️" if ge > 0 else "⛔"
-
-arrow_batt_load = "➡️" if (load_kw > pv_total and soc_pct > 20) else "⛔"
-arrow_grid_load = "➡️" if gi > 0 else "⛔"
-
-# Layout
-colA, colB = st.columns(2)
-
-with colA:
-    st.markdown("### ☀️ PV Flows")
-    st.markdown(f"PV → Load: ➡️ **{pv_to_load:.2f} kW**")
-    st.markdown(f"PV → Battery: ➡️ **{pv_to_battery:.2f} kW**")
-    st.markdown(f"PV → Grid: ➡️ **{pv_to_grid:.2f} kW**")
-
-
-with colB:
-    st.markdown("### 🔋 & 🔌 Other Flows")
-    st.markdown(f"Battery → Load: {arrow_batt_load}  **{max(0, load_kw - pv_total - gi):.2f} kW**")
-    st.markdown(f"Grid → Load: {arrow_grid_load}  **{gi:.2f} kW**")
-    
-# Build flows dict (you already do this)
 st.markdown("## 🗺️ Grid Topology View")
 st.markdown(
     render_ems_grid_topology(history, latest_index, num_nodes),
