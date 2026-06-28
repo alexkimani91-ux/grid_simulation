@@ -93,6 +93,37 @@ soc_max_ui = st.sidebar.slider(
     value=80,
     step=1
 )
+def render_battery_svg(soc_pct: float) -> str:
+    # Clamp SOC
+    soc = max(0, min(100, soc_pct))
+    # Battery inner width (px)
+    max_width = 80
+    fill_width = max_width * soc / 100
+
+    svg = f"""
+    <svg width="120" height="40" xmlns="http://www.w3.org/2000/svg">
+      <!-- Battery body -->
+      <rect x="10" y="10" width="{max_width}" height="20" rx="3" ry="3"
+            fill="none" stroke="#333" stroke-width="2"/>
+      <!-- Battery tip -->
+      <rect x="{10 + max_width}" y="15" width="8" height="10" rx="2" ry="2"
+            fill="#333"/>
+
+      <!-- Fill background -->
+      <rect x="12" y="12" width="{max_width - 4}" height="16" rx="2" ry="2"
+            fill="#eee"/>
+
+      <!-- Fill level -->
+      <rect x="12" y="12" width="{fill_width - 4 if fill_width > 4 else 0}" height="16" rx="2" ry="2"
+            fill="{('#2ecc71' if soc >= 60 else '#f1c40f' if soc >= 30 else '#e74c3c')}"/>
+
+      <!-- Text -->
+      <text x="60" y="35" font-size="10" text-anchor="middle" fill="#333">
+        {soc:.1f}%
+      </text>
+    </svg>
+    """
+    return svg
 
 # Load Controls
 st.sidebar.markdown("### 🏠 Load Controls")
