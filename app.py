@@ -274,9 +274,9 @@ with colC:
 
 with colD:
     soc_pct = node["battery_soc"]
-    svg = render_battery_svg(soc_pct)
-    st.markdown(svg, unsafe_allow_html=True)
+    st.markdown(render_battery_svg(soc_pct), unsafe_allow_html=True)
     st.caption("Battery SOC")
+
 
 
 with colE:
