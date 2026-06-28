@@ -259,29 +259,34 @@ def run_simulation(
 
         # Save history
         history.append({
-            "hour": hour,
-            "irradiance": irradiance,
-            "grid_load_kw": total_grid_load,
-            "grid_contribution_kw": total_grid_import - total_grid_export,
+    "hour": hour,
+    "irradiance": irradiance,
+    "grid_load_kw": total_grid_load,
+    "grid_contribution_kw": total_grid_import - total_grid_export,
 
-            "grid_import_kwh": total_grid_import,
-            "grid_export_kwh": total_grid_export,
-            "cost_eur": total_grid_import * grid_import_price,
-            "revenue_eur": total_grid_export * grid_export_price,
-            "net_cost_eur": (total_grid_import * grid_import_price)
-                            - (total_grid_export * grid_export_price),
+    "pv_to_load_kw": load_supplied_by_pv,
+    "pv_to_battery_kw": charged,
+    "pv_to_grid_kw": grid_export,
 
-            "nodes": [
-                {
-                    "pv1_kw": pv1_kw,
-                    "pv2_kw": pv2_kw,
-                    "battery_soc": 100.0 * (battery.soc / battery.capacity) if battery.capacity > 0 else 0.0,
-                    "load_kw": load_kw,
-                    "grid_import_kw": gi_kw,
-                    "grid_export_kw": ge_kw,
-                }
-                for (pv1_kw, pv2_kw, battery, load_kw, gi_kw, ge_kw) in node_values
-            ]
-        })
+    "grid_import_kwh": total_grid_import,
+    "grid_export_kwh": total_grid_export,
+    "cost_eur": total_grid_import * grid_import_price,
+    "revenue_eur": total_grid_export * grid_export_price,
+    "net_cost_eur": (total_grid_import * grid_import_price)
+                    - (total_grid_export * grid_export_price),
+
+    "nodes": [
+    {
+        "pv1_kw": pv1_kw,
+        "pv2_kw": pv2_kw,
+        "battery_soc": 100.0 * (battery.soc / battery.capacity) if battery.capacity > 0 else 0.0,
+        "load_kw": total_load,
+        "grid_import_kw": grid_import,
+        "grid_export_kw": grid_export,
+    }
+    for (pv1_kw, pv2_kw, battery, total_load, grid_import, grid_export) in node_values
+]
+
+})
 
     return history
