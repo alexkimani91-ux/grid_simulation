@@ -94,36 +94,54 @@ soc_max_ui = st.sidebar.slider(
     step=1
 )
 def render_battery_svg(soc_pct: float) -> str:
-    # Clamp SOC
-    soc = max(0, min(100, soc_pct))
-    # Battery inner width (px)
-    max_width = 80
-    fill_width = max_width * soc / 100
+    soc = max(0, min(100, soc_pct))  # clamp
+
+    # Battery dimensions
+    outer_width = 80
+    outer_height = 20
+    inner_padding = 3
+
+    # Fill width based on SOC
+    inner_width = outer_width - 2 * inner_padding
+    fill_width = inner_width * soc / 100
+
+    # Color logic
+    if soc >= 60:
+        color = "#2ecc71"   # green
+    elif soc >= 30:
+        color = "#f1c40f"   # yellow
+    else:
+        color = "#e74c3c"   # red
 
     svg = f"""
-    <svg width="120" height="40" xmlns="http://www.w3.org/2000/svg">
-      <!-- Battery body -->
-      <rect x="10" y="10" width="{max_width}" height="20" rx="3" ry="3"
-            fill="none" stroke="#333" stroke-width="2"/>
+    <svg width="140" height="50" xmlns="http://www.w3.org/2000/svg">
+      <!-- Battery outline -->
+      <rect x="10" y="10" width="{outer_width}" height="{outer_height}"
+            rx="4" ry="4" fill="none" stroke="#333" stroke-width="2"/>
+
       <!-- Battery tip -->
-      <rect x="{10 + max_width}" y="15" width="8" height="10" rx="2" ry="2"
-            fill="#333"/>
+      <rect x="{10 + outer_width}" y="15" width="8" height="10"
+            rx="2" ry="2" fill="#333"/>
 
-      <!-- Fill background -->
-      <rect x="12" y="12" width="{max_width - 4}" height="16" rx="2" ry="2"
-            fill="#eee"/>
+      <!-- Background -->
+      <rect x="{10 + inner_padding}" y="{10 + inner_padding}"
+            width="{inner_width}" height="{outer_height - 2*inner_padding}"
+            rx="2" ry="2" fill="#eee"/>
 
-      <!-- Fill level -->
-      <rect x="12" y="12" width="{fill_width - 4 if fill_width > 4 else 0}" height="16" rx="2" ry="2"
-            fill="{('#2ecc71' if soc >= 60 else '#f1c40f' if soc >= 30 else '#e74c3c')}"/>
+      <!-- Fill -->
+      <rect x="{10 + inner_padding}" y="{10 + inner_padding}"
+            width="{fill_width}" height="{outer_height - 2*inner_padding}"
+            rx="2" ry="2" fill="{color}"/>
 
       <!-- Text -->
-      <text x="60" y="35" font-size="10" text-anchor="middle" fill="#333">
+      <text x="50" y="45" font-size="12" text-anchor="middle" fill="#333">
         {soc:.1f}%
       </text>
     </svg>
     """
+
     return svg
+
 
 # Load Controls
 st.sidebar.markdown("### 🏠 Load Controls")
