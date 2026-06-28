@@ -255,19 +255,11 @@ with colC:
     st.metric("PV2 (kW)", f"{node['pv2_kw']:.2f}")
 
 with colD:
-    usable_max = 0.8 * battery_kwh
-    soc_pct = 0.0
-    if usable_max > 0:
-        soc_pct = node["battery_soc"]
+    soc_pct = node["battery_soc"]
+    svg = render_battery_svg(soc_pct)
+    st.markdown(svg, unsafe_allow_html=True)
+    st.caption("Battery SOC")
 
-    if soc_pct <= 25:
-        st.error(f"{soc_pct:.1f}%")
-    elif soc_pct >= 75:
-        st.warning(f"{soc_pct:.1f}%")
-    else:
-        st.success(f"{soc_pct:.1f}%")
-
-    st.caption("Battery SOC (%)")
 
 with colE:
     st.metric("Grid Contribution (kW)", f"{latest['grid_contribution_kw']:.2f}")
