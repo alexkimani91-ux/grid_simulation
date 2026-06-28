@@ -190,44 +190,38 @@ def render_ems_grid_animated(node, flows):
     battery_to_load = flows["battery_to_load"]
     grid_to_load = flows["grid_to_load"]
 
-    # Direction logic
-    batt_discharge = battery_to_load > 0.01
-    batt_charge = pv_to_battery > 0.01
-    grid_import = grid_to_load > 0.01
-    grid_export = pv_to_grid > 0.01
-
     batt_fill = int(80 * soc / 100)
 
-    svg = f"""
+    batt_discharge = battery_to_load > 0.01
+    grid_import = grid_to_load > 0.01
+
+    # Build SVG in pieces to avoid complex f-string expressions
+    svg = """
 <div style="display:block;">
 <svg viewBox="0 0 1400 700" xmlns="http://www.w3.org/2000/svg">
 
-  <!-- Arrow marker -->
   <defs>
     <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
       <polygon points="0,0 12,6 0,12" fill="currentColor"/>
     </marker>
   </defs>
 
-  <!-- ========================= -->
-  <!-- AC BUS / NODE (CENTER)    -->
-  <!-- ========================= -->
+  <!-- AC BUS / NODE -->
   <line x1="500" y1="350" x2="900" y2="350" stroke="#444" stroke-width="12"/>
   <circle cx="500" cy="350" r="12" fill="#444"/>
   <circle cx="900" cy="350" r="12" fill="#444"/>
   <text x="700" y="320" text-anchor="middle" font-size="22">AC BUS / NODE</text>
 
-  <!-- ========================= -->
-  <!-- HOUSE WITH PV (LEFT TOP)  -->
-  <!-- ========================= -->
+  <!-- HOUSE WITH PV -->
   <polygon points="150,120 230,120 190,70" fill="#e0e0e0" stroke="#333" stroke-width="4"/>
   <rect x="150" y="120" width="80" height="60" fill="#e0e0e0" stroke="#333" stroke-width="4"/>
   <rect x="165" y="140" width="20" height="25" fill="#fff" stroke="#333"/>
-  <!-- Roof PV -->
   <rect x="160" y="90" width="60" height="20" fill="#f7e27c" stroke="#333" stroke-width="3"/>
+"""
+
+    svg += f"""
   <text x="190" y="210" text-anchor="middle" font-size="18">House + PV</text>
 
-  <!-- PV → Bus -->
   <line x1="230" y1="150" x2="500" y2="350"
         stroke="#2ecc71" stroke-width="6" stroke-dasharray="14 10"
         marker-end="url(#arrow)">
@@ -235,97 +229,100 @@ def render_ems_grid_animated(node, flows):
   </line>
   <text x="300" y="240" font-size="14">PV→Bus {pv:.1f} kW</text>
 
-  <!-- ========================= -->
-  <!-- INDUSTRY (LEFT BOTTOM)    -->
-  <!-- ========================= -->
+  <!-- INDUSTRY -->
   <rect x="150" y="420" width="120" height="80" fill="#cfcfcf" stroke="#333" stroke-width="4"/>
   <rect x="165" y="400" width="15" height="20" fill="#cfcfcf" stroke="#333"/>
   <rect x="190" y="390" width="15" height="30" fill="#cfcfcf" stroke="#333"/>
   <rect x="215" y="380" width="15" height="40" fill="#cfcfcf" stroke="#333"/>
   <text x="210" y="530" text-anchor="middle" font-size="18">Industry</text>
 
-  <!-- Bus → Industry -->
   <line x1="500" y1="350" x2="210" y2="460"
-        stroke="#444" stroke-width="6" marker-end="url(#arrow)">
-  </line>
+        stroke="#444" stroke-width="6" marker-end="url(#arrow)"/>
   <text x="300" y="400" font-size="14">Bus→Industry {load:.1f} kW</text>
 
-  <!-- ========================= -->
-  <!-- BATTERY (LEFT MID)        -->
-  <!-- ========================= -->
+  <!-- BATTERY -->
   <rect x="330" y="420" width="140" height="90" fill="#fafafa" stroke="#333" stroke-width="4"/>
   <rect x="350" y="450" width="100" height="40" fill="#ddd" stroke="#333"/>
   <rect x="350" y="450" width="{batt_fill}" height="40" fill="#2ecc71"/>
   <text x="400" y="540" text-anchor="middle" font-size="18">Battery {soc:.1f}%</text>
 
-  <!-- Converter -->
+  <!-- CONVERTER -->
   <rect x="330" y="300" width="140" height="70" fill="#fff" stroke="#333" stroke-width="4"/>
   <polygon points="360,335 390,320 390,350" fill="#e67e22"/>
   <polygon points="420,335 450,320 450,350" fill="#e67e22"/>
   <text x="400" y="390" text-anchor="middle" font-size="16">Converter</text>
 
-  <!-- Battery ↔ Converter -->
   <line x1="400" y1="420" x2="400" y2="370"
         stroke="#e67e22" stroke-width="6" stroke-dasharray="14 10"
         marker-end="url(#arrow)">
     <animate attributeName="stroke-dashoffset" from="28" to="0" dur="1s" repeatCount="indefinite"/>
   </line>
+"""
 
-  <!-- Converter ↔ Bus -->
-  {"".join([
-    # Battery discharging → Bus
-    '<line x1="470" y1="335" x2="500" y2="350" stroke="#e67e22" stroke-width="6" stroke-dasharray="14 10" marker-end="url(#arrow)">'
-    '<animate attributeName="stroke-dashoffset" from="28" to="0" dur="1s" repeatCount="indefinite"/>'
-    '</line>'
-    '<text x="450" y="310" font-size="14">Batt→Bus ' + f'{battery_to_load:.1f}' + ' kW</text>'
-    if batt_discharge else
-    # Battery charging ← Bus
-    '<line x1="500" y1="350" x2="470" y2="335" stroke="#e67e22" stroke-width="6" stroke-dasharray="14 10" marker-end="url(#arrow)">'
-    '<animate attributeName="stroke-dashoffset" from="28" to="0" dur="1s" repeatCount="indefinite"/>'
-    '</line>'
-    '<text x="450" y="310" font-size="14">Bus→Batt ' + f'{pv_to_battery:.1f}' + ' kW</text>'
-  ])}
+    # Battery ↔ Bus
+    if batt_discharge:
+        svg += f"""
+  <line x1="470" y1="335" x2="500" y2="350"
+        stroke="#e67e22" stroke-width="6" stroke-dasharray="14 10"
+        marker-end="url(#arrow)">
+    <animate attributeName="stroke-dashoffset" from="28" to="0" dur="1s" repeatCount="indefinite"/>
+  </line>
+  <text x="450" y="310" font-size="14">Batt→Bus {battery_to_load:.1f} kW</text>
+"""
+    else:
+        svg += f"""
+  <line x1="500" y1="350" x2="470" y2="335"
+        stroke="#e67e22" stroke-width="6" stroke-dasharray="14 10"
+        marker-end="url(#arrow)">
+    <animate attributeName="stroke-dashoffset" from="28" to="0" dur="1s" repeatCount="indefinite"/>
+  </line>
+  <text x="450" y="310" font-size="14">Bus→Batt {pv_to_battery:.1f} kW</text>
+"""
 
-  <!-- ========================= -->
-  <!-- GRID TRANSFORMER (RIGHT)  -->
-  <!-- ========================= -->
+    # Grid transformer + flow
+    svg += """
+  <!-- GRID TRANSFORMER -->
   <rect x="950" y="300" width="180" height="120" fill="#cce5ff" stroke="#333" stroke-width="4"/>
   <circle cx="980" cy="360" r="20" fill="none" stroke="#333" stroke-width="4"/>
   <circle cx="1030" cy="360" r="20" fill="none" stroke="#333" stroke-width="4"/>
   <text x="1040" y="450" text-anchor="middle" font-size="18">Grid XFMR</text>
+"""
 
-  <!-- Grid ↔ Bus -->
-  {"".join([
-    # Import: Grid→Bus
-    '<line x1="950" y1="360" x2="900" y2="350" stroke="#2980b9" stroke-width="6" stroke-dasharray="14 10" marker-end="url(#arrow)">'
-    '<animate attributeName="stroke-dashoffset" from="28" to="0" dur="1s" repeatCount="indefinite"/>'
-    '</line>'
-    '<text x="920" y="330" font-size="14">Grid→Bus ' + f'{grid_to_load:.1f}' + ' kW</text>'
-    if grid_import else
-    # Export: Bus→Grid
-    '<line x1="900" y1="350" x2="950" y2="360" stroke="#27ae60" stroke-width="6" stroke-dasharray="14 10" marker-end="url(#arrow)">'
-    '<animate attributeName="stroke-dashoffset" from="28" to="0" dur="1s" repeatCount="indefinite"/>'
-    '</line>'
-    '<text x="920" y="330" font-size="14">Bus→Grid ' + f'{pv_to_grid:.1f}' + ' kW</text>'
-  ])}
+    if grid_import:
+        svg += f"""
+  <line x1="950" y1="360" x2="900" y2="350"
+        stroke="#2980b9" stroke-width="6" stroke-dasharray="14 10"
+        marker-end="url(#arrow)">
+    <animate attributeName="stroke-dashoffset" from="28" to="0" dur="1s" repeatCount="indefinite"/>
+  </line>
+  <text x="920" y="330" font-size="14">Grid→Bus {grid_to_load:.1f} kW</text>
+"""
+    else:
+        svg += f"""
+  <line x1="900" y1="350" x2="950" y2="360"
+        stroke="#27ae60" stroke-width="6" stroke-dasharray="14 10"
+        marker-end="url(#arrow)">
+    <animate attributeName="stroke-dashoffset" from="28" to="0" dur="1s" repeatCount="indefinite"/>
+  </line>
+  <text x="920" y="330" font-size="14">Bus→Grid {pv_to_grid:.1f} kW</text>
+"""
 
-  <!-- ========================= -->
-  <!-- HOUSE LOAD (RIGHT TOP)    -->
-  <!-- ========================= -->
+    # House load on right
+    svg += f"""
+  <!-- HOUSE LOAD (RIGHT) -->
   <polygon points="700,120 760,120 730,70" fill="#e0e0e0" stroke="#333" stroke-width="4"/>
   <rect x="700" y="120" width="60" height="60" fill="#e0e0e0" stroke="#333" stroke-width="4"/>
   <rect x="715" y="140" width="20" height="25" fill="#fff" stroke="#333"/>
   <text x="730" y="210" text-anchor="middle" font-size="18">House</text>
 
-  <!-- Bus → House -->
   <line x1="700" y1="350" x2="730" y2="180"
-        stroke="#444" stroke-width="6" marker-end="url(#arrow)">
-  </line>
+        stroke="#444" stroke-width="6" marker-end="url(#arrow)"/>
   <text x="740" y="300" font-size="14">Bus→House {pv_to_load:.1f} kW</text>
 
 </svg>
 </div>
 """
+
     return svg
 
 # -----------------------------
