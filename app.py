@@ -109,9 +109,9 @@ def render_battery_svg(soc_pct: float) -> str:
     if soc <= 25:
         color = "#e74c3c"   # red
     elif soc >= 75:
-        color = "#f1c40f"   # green
+        color = "#2ecc71"   # green
     else:
-        color = "#2ecc71"   # yellow
+        color = "#f1c40f"   # yellow
 
     svg = f"""
     <svg width="140" height="50" xmlns="http://www.w3.org/2000/svg">
