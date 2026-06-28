@@ -195,116 +195,117 @@ def render_ems_grid_animated(node, flows):
 
     svg = f"""
 <div style="display:block;">
-<svg width="1100" height="500" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 1200 600" xmlns="http://www.w3.org/2000/svg">
 
   <!-- ========================= -->
-  <!-- MAIN AC BUS (CENTER)      -->
+  <!-- MAIN AC BUS               -->
   <!-- ========================= -->
-  <line x1="450" y1="250" x2="850" y2="250" stroke="#444" stroke-width="8"/>
-  <circle cx="450" cy="250" r="10" fill="#444"/>
-  <circle cx="850" cy="250" r="10" fill="#444"/>
-  <text x="650" y="235" text-anchor="middle" font-size="16">AC BUS</text>
+  <line x1="450" y1="300" x2="900" y2="300" stroke="#444" stroke-width="10"/>
+  <circle cx="450" cy="300" r="12" fill="#444"/>
+  <circle cx="900" cy="300" r="12" fill="#444"/>
+  <text x="675" y="270" text-anchor="middle" font-size="20">AC BUS</text>
 
   <!-- ========================= -->
-  <!-- PV ARRAY (LEFT TOP)       -->
+  <!-- PV ARRAY                  -->
   <!-- ========================= -->
-  <rect x="80" y="60" width="140" height="100" fill="#f7e27c" stroke="#333" stroke-width="3"/>
-  <line x1="80" y1="90" x2="220" y2="90" stroke="#333" stroke-width="2"/>
-  <line x1="80" y1="120" x2="220" y2="120" stroke="#333" stroke-width="2"/>
-  <text x="150" y="180" text-anchor="middle" font-size="15">PV Array</text>
+  <rect x="80" y="80" width="180" height="120" fill="#f7e27c" stroke="#333" stroke-width="4"/>
+  <line x1="80" y1="110" x2="260" y2="110" stroke="#333" stroke-width="2"/>
+  <line x1="80" y1="140" x2="260" y2="140" stroke="#333" stroke-width="2"/>
+  <line x1="80" y1="170" x2="260" y2="170" stroke="#333" stroke-width="2"/>
+  <text x="170" y="230" text-anchor="middle" font-size="18">PV Array</text>
 
   <!-- PV → Inverter -->
-  <line x1="220" y1="110" x2="300" y2="110"
-        stroke="#2ecc71" stroke-width="5" stroke-dasharray="12 8">
-    <animate attributeName="stroke-dashoffset" from="24" to="0" dur="1s" repeatCount="indefinite"/>
+  <line x1="260" y1="140" x2="360" y2="140"
+        stroke="#2ecc71" stroke-width="6" stroke-dasharray="14 10">
+    <animate attributeName="stroke-dashoffset" from="28" to="0" dur="1s" repeatCount="indefinite"/>
   </line>
 
   <!-- ========================= -->
-  <!-- INVERTER (LEFT MID)       -->
+  <!-- INVERTER                  -->
   <!-- ========================= -->
-  <rect x="300" y="80" width="120" height="60" fill="#fff" stroke="#333" stroke-width="3"/>
-  <path d="M315 110 Q340 80 365 110 T415 110" fill="none" stroke="#3498db" stroke-width="3"/>
-  <text x="360" y="155" text-anchor="middle" font-size="14">Inverter</text>
+  <rect x="360" y="100" width="150" height="80" fill="#fff" stroke="#333" stroke-width="4"/>
+  <path d="M380 140 Q410 100 440 140 T500 140" fill="none" stroke="#3498db" stroke-width="4"/>
+  <text x="435" y="200" text-anchor="middle" font-size="18">Inverter</text>
 
   <!-- Inverter → Bus -->
-  <line x1="420" y1="110" x2="450" y2="250"
-        stroke="#2ecc71" stroke-width="5" stroke-dasharray="12 8">
-    <animate attributeName="stroke-dashoffset" from="24" to="0" dur="1s" repeatCount="indefinite"/>
+  <line x1="510" y1="140" x2="450" y2="300"
+        stroke="#2ecc71" stroke-width="6" stroke-dasharray="14 10">
+    <animate attributeName="stroke-dashoffset" from="28" to="0" dur="1s" repeatCount="indefinite"/>
   </line>
-  <text x="430" y="180" font-size="12">PV→Bus {pv:.1f} kW</text>
+  <text x="480" y="220" font-size="14">PV→Bus {pv:.1f} kW</text>
 
   <!-- ========================= -->
-  <!-- BATTERY (LEFT BOTTOM)     -->
+  <!-- BATTERY                   -->
   <!-- ========================= -->
-  <rect x="80" y="300" width="140" height="100" fill="#fafafa" stroke="#333" stroke-width="3"/>
-  <rect x="100" y="330" width="100" height="40" fill="#ddd" stroke="#333"/>
-  <rect x="100" y="330" width="{batt_fill}" height="40" fill="#2ecc71"/>
-  <text x="150" y="430" text-anchor="middle" font-size="15">Battery {soc:.1f}%</text>
+  <rect x="80" y="360" width="180" height="120" fill="#fafafa" stroke="#333" stroke-width="4"/>
+  <rect x="110" y="400" width="120" height="40" fill="#ddd" stroke="#333"/>
+  <rect x="110" y="400" width="{batt_fill}" height="40" fill="#2ecc71"/>
+  <text x="170" y="520" text-anchor="middle" font-size="18">Battery {soc:.1f}%</text>
 
   <!-- Battery → Converter -->
-  <line x1="220" y1="350" x2="300" y2="350"
-        stroke="#e67e22" stroke-width="5" stroke-dasharray="12 8">
-    <animate attributeName="stroke-dashoffset" from="24" to="0" dur="1s" repeatCount="indefinite"/>
+  <line x1="260" y1="420" x2="360" y2="420"
+        stroke="#e67e22" stroke-width="6" stroke-dasharray="14 10">
+    <animate attributeName="stroke-dashoffset" from="28" to="0" dur="1s" repeatCount="indefinite"/>
   </line>
 
   <!-- ========================= -->
-  <!-- CONVERTER (LEFT MID-BOT)  -->
+  <!-- CONVERTER                 -->
   <!-- ========================= -->
-  <rect x="300" y="320" width="120" height="60" fill="#fff" stroke="#333" stroke-width="3"/>
-  <polygon points="330,350 350,340 350,360" fill="#e67e22"/>
-  <polygon points="390,350 410,340 410,360" fill="#e67e22"/>
-  <text x="360" y="395" text-anchor="middle" font-size="14">Converter</text>
+  <rect x="360" y="380" width="150" height="80" fill="#fff" stroke="#333" stroke-width="4"/>
+  <polygon points="390,420 420,400 420,440" fill="#e67e22"/>
+  <polygon points="460,420 490,400 490,440" fill="#e67e22"/>
+  <text x="435" y="480" text-anchor="middle" font-size="18">Converter</text>
 
   <!-- Converter → Bus -->
-  <line x1="420" y1="350" x2="450" y2="250"
-        stroke="#e67e22" stroke-width="5" stroke-dasharray="12 8">
-    <animate attributeName="stroke-dashoffset" from="24" to="0" dur="1s" repeatCount="indefinite"/>
+  <line x1="510" y1="420" x2="450" y2="300"
+        stroke="#e67e22" stroke-width="6" stroke-dasharray="14 10">
+    <animate attributeName="stroke-dashoffset" from="28" to="0" dur="1s" repeatCount="indefinite"/>
   </line>
-  <text x="430" y="310" font-size="12">Batt→Bus {battery_to_load:.1f} kW</text>
+  <text x="480" y="360" font-size="14">Batt→Bus {battery_to_load:.1f} kW</text>
 
   <!-- ========================= -->
-  <!-- GRID TRANSFORMER (RIGHT)  -->
+  <!-- GRID TRANSFORMER          -->
   <!-- ========================= -->
-  <rect x="900" y="200" width="140" height="100" fill="#cce5ff" stroke="#333" stroke-width="3"/>
-  <circle cx="930" cy="250" r="15" fill="none" stroke="#333" stroke-width="3"/>
-  <circle cx="980" cy="250" r="15" fill="none" stroke="#333" stroke-width="3"/>
-  <text x="970" y="330" text-anchor="middle" font-size="15">Grid</text>
+  <rect x="950" y="250" width="180" height="120" fill="#cce5ff" stroke="#333" stroke-width="4"/>
+  <circle cx="990" cy="310" r="20" fill="none" stroke="#333" stroke-width="4"/>
+  <circle cx="1040" cy="310" r="20" fill="none" stroke="#333" stroke-width="4"/>
+  <text x="1040" y="390" text-anchor="middle" font-size="18">Grid</text>
 
   <!-- Grid → Bus -->
-  <line x1="900" y1="250" x2="850" y2="250"
-        stroke="#2980b9" stroke-width="5" stroke-dasharray="12 8">
-    <animate attributeName="stroke-dashoffset" from="24" to="0" dur="1s" repeatCount="indefinite"/>
+  <line x1="950" y1="310" x2="900" y2="300"
+        stroke="#2980b9" stroke-width="6" stroke-dasharray="14 10">
+    <animate attributeName="stroke-dashoffset" from="28" to="0" dur="1s" repeatCount="indefinite"/>
   </line>
-  <text x="880" y="235" font-size="12">Grid→Bus {grid_to_load:.1f} kW</text>
+  <text x="930" y="280" font-size="14">Grid→Bus {grid_to_load:.1f} kW</text>
 
   <!-- ========================= -->
-  <!-- HOUSE LOAD (TOP RIGHT)    -->
+  <!-- HOUSE LOAD                -->
   <!-- ========================= -->
-  <polygon points="600,80 640,80 620,60" fill="#e0e0e0" stroke="#333" stroke-width="3"/>
-  <rect x="600" y="80" width="40" height="40" fill="#e0e0e0" stroke="#333" stroke-width="3"/>
-  <rect x="610" y="95" width="10" height="15" fill="#fff" stroke="#333"/>
-  <text x="620" y="145" text-anchor="middle" font-size="15">House</text>
+  <polygon points="650,80 700,80 675,50" fill="#e0e0e0" stroke="#333" stroke-width="4"/>
+  <rect x="650" y="80" width="50" height="50" fill="#e0e0e0" stroke="#333" stroke-width="4"/>
+  <rect x="665" y="95" width="15" height="20" fill="#fff" stroke="#333"/>
+  <text x="675" y="160" text-anchor="middle" font-size="18">House</text>
 
   <!-- Bus → House -->
-  <line x1="620" y1="250" x2="620" y2="120"
-        stroke="#444" stroke-width="5"/>
-  <polygon points="620,120 610,135 630,135" fill="#444"/>
-  <text x="630" y="230" font-size="12">Bus→House {pv_to_load:.1f} kW</text>
+  <line x1="675" y1="300" x2="675" y2="130"
+        stroke="#444" stroke-width="6"/>
+  <polygon points="675,130 665,150 685,150" fill="#444"/>
+  <text x="690" y="260" font-size="14">Bus→House {pv_to_load:.1f} kW</text>
 
   <!-- ========================= -->
-  <!-- INDUSTRY LOAD (BOTTOM R)  -->
+  <!-- INDUSTRY LOAD             -->
   <!-- ========================= -->
-  <rect x="600" y="330" width="80" height="60" fill="#cfcfcf" stroke="#333" stroke-width="3"/>
-  <rect x="610" y="310" width="10" height="20" fill="#cfcfcf" stroke="#333"/>
-  <rect x="630" y="300" width="10" height="30" fill="#cfcfcf" stroke="#333"/>
-  <rect x="650" y="290" width="10" height="40" fill="#cfcfcf" stroke="#333"/>
-  <text x="640" y="415" text-anchor="middle" font-size="15">Industry</text>
+  <rect x="650" y="380" width="100" height="80" fill="#cfcfcf" stroke="#333" stroke-width="4"/>
+  <rect x="660" y="360" width="15" height="20" fill="#cfcfcf" stroke="#333"/>
+  <rect x="685" y="350" width="15" height="30" fill="#cfcfcf" stroke="#333"/>
+  <rect x="710" y="340" width="15" height="40" fill="#cfcfcf" stroke="#333"/>
+  <text x="700" y="490" text-anchor="middle" font-size="18">Industry</text>
 
   <!-- Bus → Industry -->
-  <line x1="640" y1="250" x2="640" y2="330"
-        stroke="#444" stroke-width="5"/>
-  <polygon points="640,330 630,315 650,315" fill="#444"/>
-  <text x="650" y="280" font-size="12">Bus→Industry {load:.1f} kW</text>
+  <line x1="700" y1="300" x2="700" y2="380"
+        stroke="#444" stroke-width="6"/>
+  <polygon points="700,380 690,360 710,360" fill="#444"/>
+  <text x="715" y="330" font-size="14">Bus→Industry {load:.1f} kW</text>
 
 </svg>
 </div>
