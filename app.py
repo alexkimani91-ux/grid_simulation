@@ -195,67 +195,139 @@ def render_ems_grid_animated(node, flows):
 
     svg = f"""
 <div style="display:block;">
-<svg width="900" height="320" xmlns="http://www.w3.org/2000/svg">
+<svg width="1000" height="420" xmlns="http://www.w3.org/2000/svg">
 
-<line x1="200" y1="160" x2="700" y2="160" stroke="#444" stroke-width="5"/>
+  <!-- MAIN BUS (AC NODE) -->
+  <line x1="420" y1="210" x2="780" y2="210" stroke="#444" stroke-width="6"/>
+  <circle cx="420" cy="210" r="8" fill="#444"/>
+  <circle cx="780" cy="210" r="8" fill="#444"/>
+  <text x="600" y="200" text-anchor="middle" font-size="14">AC Bus / Node</text>
 
-<rect x="60" y="80" width="100" height="60" fill="#f7e27c" stroke="#333" stroke-width="2"/>
-<line x1="60" y1="100" x2="160" y2="100" stroke="#333" stroke-width="1"/>
-<line x1="60" y1="120" x2="160" y2="120" stroke="#333" stroke-width="1"/>
-<text x="110" y="155" text-anchor="middle" font-size="13">PV Array</text>
+  <!-- PV ARRAY ICON (DC SIDE) -->
+  <rect x="60" y="60" width="120" height="80" fill="#f7e27c" stroke="#333" stroke-width="2"/>
+  <line x1="60" y1="80" x2="180" y2="80" stroke="#333" stroke-width="1"/>
+  <line x1="60" y1="100" x2="180" y2="100" stroke="#333" stroke-width="1"/>
+  <line x1="60" y1="120" x2="180" y2="120" stroke="#333" stroke-width="1"/>
+  <text x="120" y="155" text-anchor="middle" font-size="13">PV Array</text>
 
-<line x1="160" y1="110" x2="200" y2="110" stroke="#2ecc71" stroke-width="4" stroke-dasharray="8 6">
-  <animate attributeName="stroke-dashoffset" from="16" to="0" dur="1s" repeatCount="indefinite"/>
-</line>
-<line x1="200" y1="110" x2="200" y2="160" stroke="#2ecc71" stroke-width="4" stroke-dasharray="8 6">
-  <animate attributeName="stroke-dashoffset" from="16" to="0" dur="1s" repeatCount="indefinite"/>
-</line>
-<text x="200" y="95" font-size="11" text-anchor="start">PV→Bus {pv:.1f} kW</text>
+  <!-- INVERTER ICON -->
+  <rect x="220" y="80" width="90" height="60" fill="#ffffff" stroke="#333" stroke-width="2"/>
+  <path d="M230 110 Q245 90 260 110 T290 110" fill="none" stroke="#3498db" stroke-width="2"/>
+  <text x="265" y="145" text-anchor="middle" font-size="12">Inverter</text>
 
-<rect x="60" y="200" width="120" height="70" fill="#fafafa" stroke="#333" stroke-width="2"/>
-<rect x="75" y="220" width="90" height="30" fill="#ddd" stroke="#333" stroke-width="1"/>
-<rect x="75" y="220" width="{batt_fill}" height="30" fill="#2ecc71"/>
-<text x="120" y="290" text-anchor="middle" font-size="13">Battery {soc:.1f}%</text>
+  <!-- PV DC FEEDER (PV → Inverter) -->
+  <line x1="180" y1="100" x2="220" y2="100"
+        stroke="#2ecc71" stroke-width="4" stroke-dasharray="10 6">
+    <animate attributeName="stroke-dashoffset"
+             from="20" to="0" dur="1s" repeatCount="indefinite"/>
+  </line>
+  <text x="200" y="90" font-size="11" text-anchor="middle">
+    PV DC {pv:.1f} kW
+  </text>
 
-<line x1="180" y1="235" x2="200" y2="235" stroke="#e67e22" stroke-width="4" stroke-dasharray="8 6">
-  <animate attributeName="stroke-dashoffset" from="16" to="0" dur="1s" repeatCount="indefinite"/>
-</line>
-<line x1="200" y1="235" x2="200" y2="160" stroke="#e67e22" stroke-width="4" stroke-dasharray="8 6">
-  <animate attributeName="stroke-dashoffset" from="16" to="0" dur="1s" repeatCount="indefinite"/>
-</line>
-<text x="210" y="230" font-size="11" text-anchor="start">Batt→Bus {battery_to_load:.1f} kW</text>
+  <!-- INVERTER AC FEEDER (Inverter → Bus) -->
+  <line x1="310" y1="110" x2="420" y2="210"
+        stroke="#2ecc71" stroke-width="4" stroke-dasharray="10 6">
+    <animate attributeName="stroke-dashoffset"
+             from="20" to="0" dur="1s" repeatCount="indefinite"/>
+  </line>
+  <text x="350" y="140" font-size="11" text-anchor="middle">
+    PV→Bus {pv_to_grid + pv_to_load + pv_to_battery:.1f} kW
+  </text>
 
-<rect x="720" y="120" width="100" height="80" fill="#cce5ff" stroke="#333" stroke-width="2"/>
-<line x1="735" y1="135" x2="805" y2="185" stroke="#333" stroke-width="2"/>
-<line x1="735" y1="185" x2="805" y2="135" stroke="#333" stroke-width="2"/>
-<text x="770" y="215" text-anchor="middle" font-size="13">Grid</text>
+  <!-- BATTERY ICON (DC SIDE) -->
+  <rect x="60" y="240" width="120" height="80" fill="#fafafa" stroke="#333" stroke-width="2"/>
+  <rect x="75" y="260" width="90" height="30" fill="#ddd" stroke="#333" stroke-width="1"/>
+  <rect x="75" y="260" width="{batt_fill}" height="30" fill="#2ecc71"/>
+  <text x="120" y="335" text-anchor="middle" font-size="13">Battery {soc:.1f}%</text>
 
-<line x1="720" y1="160" x2="700" y2="160" stroke="#2980b9" stroke-width="4" stroke-dasharray="8 6">
-  <animate attributeName="stroke-dashoffset" from="16" to="0" dur="1s" repeatCount="indefinite"/>
-</line>
-<text x="650" y="145" font-size="11" text-anchor="end">Grid→Bus {grid_to_load:.1f} kW</text>
+  <!-- BATTERY CONVERTER ICON -->
+  <rect x="220" y="260" width="90" height="60" fill="#ffffff" stroke="#333" stroke-width="2"/>
+  <path d="M230 290 L250 280 L250 300 Z" fill="#e67e22"/>
+  <path d="M280 290 L300 280 L300 300 Z" fill="#e67e22"/>
+  <text x="265" y="330" text-anchor="middle" font-size="12">Converter</text>
 
-<polygon points="350,80 390,80 370,60" fill="#e0e0e0" stroke="#333" stroke-width="2"/>
-<rect x="350" y="80" width="40" height="40" fill="#e0e0e0" stroke="#333" stroke-width="2"/>
-<text x="370" y="135" text-anchor="middle" font-size="13">House</text>
+  <!-- BATTERY DC FEEDER (Battery ↔ Converter) -->
+  <line x1="180" y1="275" x2="220" y2="275"
+        stroke="#e67e22" stroke-width="4" stroke-dasharray="10 6">
+    <animate attributeName="stroke-dashoffset"
+             from="20" to="0" dur="1s" repeatCount="indefinite"/>
+  </line>
+  <text x="200" y="265" font-size="11" text-anchor="middle">
+    Batt DC
+  </text>
 
-<rect x="450" y="80" width="60" height="40" fill="#cfcfcf" stroke="#333" stroke-width="2"/>
-<text x="480" y="135" text-anchor="middle" font-size="13">Industry</text>
+  <!-- CONVERTER AC FEEDER (Battery ↔ Bus) -->
+  <!-- Charging: Bus→Battery (blue), Discharging: Battery→Bus (orange) -->
+  <!-- We use battery_to_load as proxy for discharge; pv_to_battery for charge -->
+  <!-- Discharge (Battery→Bus) -->
+  <line x1="310" y1="290" x2="420" y2="210"
+        stroke="#e67e22" stroke-width="4" stroke-dasharray="10 6">
+    <animate attributeName="stroke-dashoffset"
+             from="20" to="0" dur="1s" repeatCount="indefinite"/>
+  </line>
+  <text x="350" y="260" font-size="11" text-anchor="middle">
+    Batt→Bus {battery_to_load:.1f} kW
+  </text>
 
-<line x1="350" y1="160" x2="350" y2="120" stroke="#444" stroke-width="3"/>
-<line x1="350" y1="120" x2="370" y2="120" stroke="#444" stroke-width="3"/>
-<polygon points="370,120 360,115 360,125" fill="#444"/>
-<text x="360" y="155" font-size="11" text-anchor="middle">Bus→House {pv_to_load:.1f} kW</text>
+  <!-- Grid Transformer ICON -->
+  <rect x="800" y="160" width="120" height="80" fill="#cce5ff" stroke="#333" stroke-width="2"/>
+  <circle cx="830" cy="190" r="12" fill="none" stroke="#333" stroke-width="2"/>
+  <circle cx="870" cy="190" r="12" fill="none" stroke="#333" stroke-width="2"/>
+  <text x="860" y="245" text-anchor="middle" font-size="13">Grid XFMR</text>
 
-<line x1="450" y1="160" x2="450" y2="120" stroke="#444" stroke-width="3"/>
-<line x1="450" y1="120" x2="480" y2="120" stroke="#444" stroke-width="3"/>
-<polygon points="480,120 470,115 470,125" fill="#444"/>
-<text x="465" y="155" font-size="11" text-anchor="middle">Bus→Industry {load:.1f} kW</text>
+  <!-- GRID FEEDER (Grid → Bus) -->
+  <line x1="800" y1="200" x2="780" y2="210"
+        stroke="#2980b9" stroke-width="4" stroke-dasharray="10 6">
+    <animate attributeName="stroke-dashoffset"
+             from="20" to="0" dur="1s" repeatCount="indefinite"/>
+  </line>
+  <text x="820" y="190" font-size="11" text-anchor="middle">
+    Grid→Bus {grid_to_load:.1f} kW
+  </text>
+
+  <!-- HOUSE ICON (LOAD) -->
+  <polygon points="520,80 560,80 540,60" fill="#e0e0e0" stroke="#333" stroke-width="2"/>
+  <rect x="520" y="80" width="40" height="40" fill="#e0e0e0" stroke="#333" stroke-width="2"/>
+  <rect x="530" y="90" width="10" height="15" fill="#ffffff" stroke="#333" stroke-width="1"/>
+  <text x="540" y="135" text-anchor="middle" font-size="13">House</text>
+
+  <!-- INDUSTRY ICON (LOAD) -->
+  <rect x="520" y="260" width="70" height="50" fill="#cfcfcf" stroke="#333" stroke-width="2"/>
+  <rect x="525" y="245" width="10" height="15" fill="#cfcfcf" stroke="#333" stroke-width="2"/>
+  <rect x="540" y="240" width="10" height="20" fill="#cfcfcf" stroke="#333" stroke-width="2"/>
+  <rect x="555" y="235" width="10" height="25" fill="#cfcfcf" stroke="#333" stroke-width="2"/>
+  <text x="555" y="330" text-anchor="middle" font-size="13">Industry</text>
+
+  <!-- BUS → HOUSE BRANCH -->
+  <line x1="540" y1="210" x2="540" y2="120" stroke="#444" stroke-width="3"/>
+  <polygon points="540,120 532,130 548,130" fill="#444"/>
+  <text x="550" y="200" font-size="11" text-anchor="start">
+    Bus→House {pv_to_load:.1f} kW
+  </text>
+
+  <!-- BUS → INDUSTRY BRANCH -->
+  <line x1="560" y1="210" x2="560" y2="260" stroke="#444" stroke-width="3"/>
+  <polygon points="560,260 552,250 568,250" fill="#444"/>
+  <text x="570" y="230" font-size="11" text-anchor="start">
+    Bus→Industry {load:.1f} kW
+  </text>
+
+  <!-- EXPORT ARROW (Bus→Grid) if pv_to_grid > 0 -->
+  <line x1="780" y1="210" x2="800" y2="200"
+        stroke="#27ae60" stroke-width="3" stroke-dasharray="8 5">
+    <animate attributeName="stroke-dashoffset"
+             from="16" to="0" dur="1s" repeatCount="indefinite"/>
+  </line>
+  <text x="790" y="225" font-size="11" text-anchor="middle">
+    Export {pv_to_grid:.1f} kW
+  </text>
 
 </svg>
 </div>
 """
     return svg
+
 
 # -----------------------------
 # SIMULATION CONTROLS
