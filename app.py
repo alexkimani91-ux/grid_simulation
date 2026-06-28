@@ -179,6 +179,67 @@ scenario = st.sidebar.selectbox(
     ]
 )
 
+
+def render_realistic_grid(node, flows):
+    pv = node["pv1_kw"] + node["pv2_kw"]
+    load = node["load_kw"]
+    soc = node["battery_soc"]
+
+    pv_to_load = flows["pv_to_load"]
+    pv_to_battery = flows["pv_to_battery"]
+    pv_to_grid = flows["pv_to_grid"]
+    battery_to_load = flows["battery_to_load"]
+    grid_to_load = flows["grid_to_load"]
+
+    svg = f"""
+    <svg width="600" height="300" xmlns="http://www.w3.org/2000/svg">
+
+      <!-- PV Panel -->
+      <rect x="50" y="40" width="80" height="40" fill="#f1c40f" stroke="#333"/>
+      <text x="90" y="65" text-anchor="middle" font-size="12">PV</text>
+
+      <!-- Battery -->
+      <rect x="50" y="120" width="80" height="40" fill="#fafafa" stroke="#333"/>
+      <text x="90" y="145" text-anchor="middle" font-size="12">Battery</text>
+
+      <!-- House -->
+      <polygon points="250,40 290,40 270,20" fill="#e0e0e0" stroke="#333"/>
+      <rect x="250" y="40" width="40" height="40" fill="#e0e0e0" stroke="#333"/>
+      <text x="270" y="65" text-anchor="middle" font-size="12">House</text>
+
+      <!-- Industry -->
+      <rect x="240" y="120" width="60" height="40" fill="#cfcfcf" stroke="#333"/>
+      <text x="270" y="145" text-anchor="middle" font-size="12">Industry</text>
+
+      <!-- Grid -->
+      <rect x="450" y="80" width="80" height="40" fill="#cce5ff" stroke="#333"/>
+      <text x="490" y="105" text-anchor="middle" font-size="12">Grid</text>
+
+      <!-- PV → Load -->
+      <line x1="130" y1="60" x2="250" y2="60" stroke="#2ecc71" stroke-width="3"/>
+      <text x="190" y="50" font-size="10">PV→Load {pv_to_load:.1f} kW</text>
+
+      <!-- PV → Battery -->
+      <line x1="90" y1="80" x2="90" y2="120" stroke="#f39c12" stroke-width="3"/>
+      <text x="100" y="100" font-size="10">PV→Battery {pv_to_battery:.1f} kW</text>
+
+      <!-- PV → Grid -->
+      <line x1="130" y1="60" x2="450" y2="100" stroke="#3498db" stroke-width="3"/>
+      <text x="300" y="80" font-size="10">PV→Grid {pv_to_grid:.1f} kW</text>
+
+      <!-- Battery → Load -->
+      <line x1="130" y1="140" x2="250" y2="140" stroke="#e67e22" stroke-width="3"/>
+      <text x="190" y="130" font-size="10">Batt→Load {battery_to_load:.1f} kW</text>
+
+      <!-- Grid → Load -->
+      <line x1="450" y1="100" x2="250" y2="100" stroke="#2980b9" stroke-width="3"/>
+      <text x="350" y="90" font-size="10">Grid→Load {grid_to_load:.1f} kW</text>
+
+    </svg>
+    """
+    return svg
+
+
 # -----------------------------
 # SIMULATION CONTROLS
 # -----------------------------
@@ -380,3 +441,13 @@ with colB:
     st.markdown("### 🔋 & 🔌 Other Flows")
     st.markdown(f"Battery → Load: {arrow_batt_load}  **{max(0, load_kw - pv_total - gi):.2f} kW**")
     st.markdown(f"Grid → Load: {arrow_grid_load}  **{gi:.2f} kW**")
+flows = {
+    "pv_to_load": pv_to_load,
+    "pv_to_battery": pv_to_battery,
+    "pv_to_grid": pv_to_grid,
+    "battery_to_load": max(0, load_kw - pv_total - gi),
+    "grid_to_load": gi
+}
+
+st.markdown("## 🗺️ Realistic Grid Model")
+st.markdown(render_realistic_grid(node, flows), unsafe_allow_html=True)
