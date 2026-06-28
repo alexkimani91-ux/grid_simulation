@@ -193,12 +193,13 @@ def render_ems_grid_animated(node, flows):
     batt_fill = int(80 * soc / 100)
 
     batt_discharge = battery_to_load > 0.01
+    batt_charge = pv_to_battery > 0.01
     grid_import = grid_to_load > 0.01
+    grid_export = pv_to_grid > 0.01
 
-    # Build SVG in pieces to avoid complex f-string expressions
     svg = """
 <div style="display:block;">
-<svg viewBox="0 0 1400 700" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 1600 900" xmlns="http://www.w3.org/2000/svg">
 
   <defs>
     <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
@@ -206,124 +207,137 @@ def render_ems_grid_animated(node, flows):
     </marker>
   </defs>
 
-  <!-- AC BUS / NODE -->
-  <line x1="500" y1="350" x2="900" y2="350" stroke="#444" stroke-width="12"/>
-  <circle cx="500" cy="350" r="12" fill="#444"/>
-  <circle cx="900" cy="350" r="12" fill="#444"/>
-  <text x="700" y="320" text-anchor="middle" font-size="22">AC BUS / NODE</text>
-
-  <!-- HOUSE WITH PV -->
-  <polygon points="150,120 230,120 190,70" fill="#e0e0e0" stroke="#333" stroke-width="4"/>
-  <rect x="150" y="120" width="80" height="60" fill="#e0e0e0" stroke="#333" stroke-width="4"/>
-  <rect x="165" y="140" width="20" height="25" fill="#fff" stroke="#333"/>
-  <rect x="160" y="90" width="60" height="20" fill="#f7e27c" stroke="#333" stroke-width="3"/>
+  <!-- ========================= -->
+  <!-- AC BUS / NODE (CENTER)    -->
+  <!-- ========================= -->
+  <line x1="600" y1="450" x2="1000" y2="450" stroke="#444" stroke-width="14"/>
+  <circle cx="600" cy="450" r="14" fill="#444"/>
+  <circle cx="1000" cy="450" r="14" fill="#444"/>
+  <text x="800" y="410" text-anchor="middle" font-size="26">AC BUS / NODE</text>
 """
 
+    # =========================
+    # HOUSE WITH PV (LEFT TOP)
+    # =========================
     svg += f"""
-  <text x="190" y="210" text-anchor="middle" font-size="18">House + PV</text>
+  <polygon points="200,150 300,150 250,100" fill="#e0e0e0" stroke="#333" stroke-width="4"/>
+  <rect x="200" y="150" width="100" height="70" fill="#e0e0e0" stroke="#333" stroke-width="4"/>
+  <rect x="220" y="170" width="25" height="30" fill="#fff" stroke="#333"/>
+  <rect x="210" y="120" width="80" height="25" fill="#f7e27c" stroke="#333" stroke-width="3"/>
+  <text x="250" y="250" text-anchor="middle" font-size="20">House + PV</text>
 
-  <line x1="230" y1="150" x2="500" y2="350"
-        stroke="#2ecc71" stroke-width="6" stroke-dasharray="14 10"
+  <line x1="300" y1="185" x2="600" y2="450"
+        stroke="#2ecc71" stroke-width="7" stroke-dasharray="16 12"
         marker-end="url(#arrow)">
-    <animate attributeName="stroke-dashoffset" from="28" to="0" dur="1s" repeatCount="indefinite"/>
+    <animate attributeName="stroke-dashoffset" from="32" to="0" dur="1s" repeatCount="indefinite"/>
   </line>
-  <text x="300" y="240" font-size="14">PV→Bus {pv:.1f} kW</text>
+  <text x="350" y="300" font-size="16">PV→Bus {pv:.1f} kW</text>
+"""
 
-  <!-- INDUSTRY -->
-  <rect x="150" y="420" width="120" height="80" fill="#cfcfcf" stroke="#333" stroke-width="4"/>
-  <rect x="165" y="400" width="15" height="20" fill="#cfcfcf" stroke="#333"/>
-  <rect x="190" y="390" width="15" height="30" fill="#cfcfcf" stroke="#333"/>
-  <rect x="215" y="380" width="15" height="40" fill="#cfcfcf" stroke="#333"/>
-  <text x="210" y="530" text-anchor="middle" font-size="18">Industry</text>
+    # =========================
+    # INDUSTRY (LEFT BOTTOM)
+    # =========================
+    svg += f"""
+  <rect x="200" y="550" width="140" height="100" fill="#cfcfcf" stroke="#333" stroke-width="4"/>
+  <rect x="215" y="520" width="20" height="30" fill="#cfcfcf" stroke="#333"/>
+  <rect x="245" y="510" width="20" height="40" fill="#cfcfcf" stroke="#333"/>
+  <rect x="275" y="500" width="20" height="50" fill="#cfcfcf" stroke="#333"/>
+  <text x="270" y="690" text-anchor="middle" font-size="20">Industry</text>
 
-  <line x1="500" y1="350" x2="210" y2="460"
-        stroke="#444" stroke-width="6" marker-end="url(#arrow)"/>
-  <text x="300" y="400" font-size="14">Bus→Industry {load:.1f} kW</text>
+  <line x1="600" y1="450" x2="270" y2="600"
+        stroke="#444" stroke-width="7" marker-end="url(#arrow)"/>
+  <text x="350" y="520" font-size="16">Bus→Industry {load:.1f} kW</text>
+"""
 
-  <!-- BATTERY -->
-  <rect x="330" y="420" width="140" height="90" fill="#fafafa" stroke="#333" stroke-width="4"/>
-  <rect x="350" y="450" width="100" height="40" fill="#ddd" stroke="#333"/>
-  <rect x="350" y="450" width="{batt_fill}" height="40" fill="#2ecc71"/>
-  <text x="400" y="540" text-anchor="middle" font-size="18">Battery {soc:.1f}%</text>
+    # =========================
+    # BATTERY + CONVERTER
+    # =========================
+    svg += f"""
+  <rect x="400" y="600" width="160" height="100" fill="#fafafa" stroke="#333" stroke-width="4"/>
+  <rect x="420" y="630" width="120" height="50" fill="#ddd" stroke="#333"/>
+  <rect x="420" y="630" width="{batt_fill}" height="50" fill="#2ecc71"/>
+  <text x="480" y="740" text-anchor="middle" font-size="20">Battery {soc:.1f}%</text>
 
-  <!-- CONVERTER -->
-  <rect x="330" y="300" width="140" height="70" fill="#fff" stroke="#333" stroke-width="4"/>
-  <polygon points="360,335 390,320 390,350" fill="#e67e22"/>
-  <polygon points="420,335 450,320 450,350" fill="#e67e22"/>
-  <text x="400" y="390" text-anchor="middle" font-size="16">Converter</text>
+  <rect x="400" y="450" width="160" height="80" fill="#fff" stroke="#333" stroke-width="4"/>
+  <polygon points="430,490 460,470 460,510" fill="#e67e22"/>
+  <polygon points="500,490 530,470 530,510" fill="#e67e22"/>
+  <text x="480" y="550" text-anchor="middle" font-size="18">Converter</text>
 
-  <line x1="400" y1="420" x2="400" y2="370"
-        stroke="#e67e22" stroke-width="6" stroke-dasharray="14 10"
+  <line x1="480" y1="600" x2="480" y2="530"
+        stroke="#e67e22" stroke-width="7" stroke-dasharray="16 12"
         marker-end="url(#arrow)">
-    <animate attributeName="stroke-dashoffset" from="28" to="0" dur="1s" repeatCount="indefinite"/>
+    <animate attributeName="stroke-dashoffset" from="32" to="0" dur="1s" repeatCount="indefinite"/>
   </line>
 """
 
     # Battery ↔ Bus
     if batt_discharge:
         svg += f"""
-  <line x1="470" y1="335" x2="500" y2="350"
-        stroke="#e67e22" stroke-width="6" stroke-dasharray="14 10"
+  <line x1="560" y1="490" x2="600" y2="450"
+        stroke="#e67e22" stroke-width="7" stroke-dasharray="16 12"
         marker-end="url(#arrow)">
-    <animate attributeName="stroke-dashoffset" from="28" to="0" dur="1s" repeatCount="indefinite"/>
+    <animate attributeName="stroke-dashoffset" from="32" to="0" dur="1s" repeatCount="indefinite"/>
   </line>
-  <text x="450" y="310" font-size="14">Batt→Bus {battery_to_load:.1f} kW</text>
+  <text x="520" y="460" font-size="16">Batt→Bus {battery_to_load:.1f} kW</text>
 """
     else:
         svg += f"""
-  <line x1="500" y1="350" x2="470" y2="335"
-        stroke="#e67e22" stroke-width="6" stroke-dasharray="14 10"
+  <line x1="600" y1="450" x2="560" y2="490"
+        stroke="#e67e22" stroke-width="7" stroke-dasharray="16 12"
         marker-end="url(#arrow)">
-    <animate attributeName="stroke-dashoffset" from="28" to="0" dur="1s" repeatCount="indefinite"/>
+    <animate attributeName="stroke-dashoffset" from="32" to="0" dur="1s" repeatCount="indefinite"/>
   </line>
-  <text x="450" y="310" font-size="14">Bus→Batt {pv_to_battery:.1f} kW</text>
+  <text x="520" y="460" font-size="16">Bus→Batt {pv_to_battery:.1f} kW</text>
 """
 
-    # Grid transformer + flow
+    # =========================
+    # GRID TRANSFORMER (RIGHT)
+    # =========================
     svg += """
-  <!-- GRID TRANSFORMER -->
-  <rect x="950" y="300" width="180" height="120" fill="#cce5ff" stroke="#333" stroke-width="4"/>
-  <circle cx="980" cy="360" r="20" fill="none" stroke="#333" stroke-width="4"/>
-  <circle cx="1030" cy="360" r="20" fill="none" stroke="#333" stroke-width="4"/>
-  <text x="1040" y="450" text-anchor="middle" font-size="18">Grid XFMR</text>
+  <rect x="1100" y="400" width="200" height="140" fill="#cce5ff" stroke="#333" stroke-width="4"/>
+  <circle cx="1140" cy="470" r="25" fill="none" stroke="#333" stroke-width="4"/>
+  <circle cx="1200" cy="470" r="25" fill="none" stroke="#333" stroke-width="4"/>
+  <text x="1200" y="560" text-anchor="middle" font-size="20">Grid XFMR</text>
 """
 
     if grid_import:
         svg += f"""
-  <line x1="950" y1="360" x2="900" y2="350"
-        stroke="#2980b9" stroke-width="6" stroke-dasharray="14 10"
+  <line x1="1100" y1="470" x2="1000" y2="450"
+        stroke="#2980b9" stroke-width="7" stroke-dasharray="16 12"
         marker-end="url(#arrow)">
-    <animate attributeName="stroke-dashoffset" from="28" to="0" dur="1s" repeatCount="indefinite"/>
+    <animate attributeName="stroke-dashoffset" from="32" to="0" dur="1s" repeatCount="indefinite"/>
   </line>
-  <text x="920" y="330" font-size="14">Grid→Bus {grid_to_load:.1f} kW</text>
+  <text x="1050" y="430" font-size="16">Grid→Bus {grid_to_load:.1f} kW</text>
 """
     else:
         svg += f"""
-  <line x1="900" y1="350" x2="950" y2="360"
-        stroke="#27ae60" stroke-width="6" stroke-dasharray="14 10"
+  <line x1="1000" y1="450" x2="1100" y2="470"
+        stroke="#27ae60" stroke-width="7" stroke-dasharray="16 12"
         marker-end="url(#arrow)">
-    <animate attributeName="stroke-dashoffset" from="28" to="0" dur="1s" repeatCount="indefinite"/>
+    <animate attributeName="stroke-dashoffset" from="32" to="0" dur="1s" repeatCount="indefinite"/>
   </line>
-  <text x="920" y="330" font-size="14">Bus→Grid {pv_to_grid:.1f} kW</text>
+  <text x="1050" y="430" font-size="16">Bus→Grid {pv_to_grid:.1f} kW</text>
 """
 
-    # House load on right
+    # =========================
+    # HOUSE LOAD (RIGHT TOP)
+    # =========================
     svg += f"""
-  <!-- HOUSE LOAD (RIGHT) -->
-  <polygon points="700,120 760,120 730,70" fill="#e0e0e0" stroke="#333" stroke-width="4"/>
-  <rect x="700" y="120" width="60" height="60" fill="#e0e0e0" stroke="#333" stroke-width="4"/>
-  <rect x="715" y="140" width="20" height="25" fill="#fff" stroke="#333"/>
-  <text x="730" y="210" text-anchor="middle" font-size="18">House</text>
+  <polygon points="900,150 980,150 940,100" fill="#e0e0e0" stroke="#333" stroke-width="4"/>
+  <rect x="900" y="150" width="80" height="70" fill="#e0e0e0" stroke="#333" stroke-width="4"/>
+  <rect x="920" y="170" width="25" height="30" fill="#fff" stroke="#333"/>
+  <text x="940" y="250" text-anchor="middle" font-size="20">House</text>
 
-  <line x1="700" y1="350" x2="730" y2="180"
-        stroke="#444" stroke-width="6" marker-end="url(#arrow)"/>
-  <text x="740" y="300" font-size="14">Bus→House {pv_to_load:.1f} kW</text>
+  <line x1="900" y1="450" x2="940" y2="220"
+        stroke="#444" stroke-width="7" marker-end="url(#arrow)"/>
+  <text x="960" y="350" font-size="16">Bus→House {pv_to_load:.1f} kW</text>
 
 </svg>
 </div>
 """
 
     return svg
+
 
 # -----------------------------
 # SIMULATION CONTROLS
@@ -527,6 +541,7 @@ with colB:
     st.markdown(f"Battery → Load: {arrow_batt_load}  **{max(0, load_kw - pv_total - gi):.2f} kW**")
     st.markdown(f"Grid → Load: {arrow_grid_load}  **{gi:.2f} kW**")
     
+# Build flows dict (you already do this)
 flows = {
     "pv_to_load": pv_to_load,
     "pv_to_battery": pv_to_battery,
@@ -535,5 +550,6 @@ flows = {
     "grid_to_load": gi,
 }
 
+# Call the EMS grid model
 st.markdown("## 🗺️ EMS Single‑Line Grid Model")
 st.markdown(render_ems_grid_animated(node, flows), unsafe_allow_html=True)
