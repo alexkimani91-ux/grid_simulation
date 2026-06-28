@@ -180,7 +180,7 @@ scenario = st.sidebar.selectbox(
 )
 
 
-def render_realistic_grid(node, flows):
+def render_ems_grid(node, flows):
     pv = node["pv1_kw"] + node["pv2_kw"]
     load = node["load_kw"]
     soc = node["battery_soc"]
@@ -191,49 +191,75 @@ def render_realistic_grid(node, flows):
     battery_to_load = flows["battery_to_load"]
     grid_to_load = flows["grid_to_load"]
 
+    # Battery fill width
+    batt_fill = int(60 * soc / 100)
+
     svg = f"""
-    <svg width="600" height="300" xmlns="http://www.w3.org/2000/svg">
+    <svg width="900" height="420" xmlns="http://www.w3.org/2000/svg">
 
-      <!-- PV Panel -->
-      <rect x="50" y="40" width="80" height="40" fill="#f1c40f" stroke="#333"/>
-      <text x="90" y="65" text-anchor="middle" font-size="12">PV</text>
+      <!-- PV Array -->
+      <rect x="40" y="40" width="120" height="70" fill="#f7e27c" stroke="#333" stroke-width="2"/>
+      <line x1="40" y1="65" x2="160" y2="65" stroke="#333" stroke-width="1"/>
+      <line x1="40" y1="90" x2="160" y2="90" stroke="#333" stroke-width="1"/>
+      <text x="100" y="120" text-anchor="middle" font-size="14">PV Array</text>
 
-      <!-- Battery -->
-      <rect x="50" y="120" width="80" height="40" fill="#fafafa" stroke="#333"/>
-      <text x="90" y="145" text-anchor="middle" font-size="12">Battery</text>
+      <!-- Inverter -->
+      <rect x="200" y="60" width="80" height="40" fill="#ffffff" stroke="#333" stroke-width="2"/>
+      <text x="240" y="85" text-anchor="middle" font-size="12">Inverter</text>
 
-      <!-- House -->
-      <polygon points="250,40 290,40 270,20" fill="#e0e0e0" stroke="#333"/>
-      <rect x="250" y="40" width="40" height="40" fill="#e0e0e0" stroke="#333"/>
-      <text x="270" y="65" text-anchor="middle" font-size="12">House</text>
+      <!-- Battery Rack -->
+      <rect x="200" y="160" width="120" height="80" fill="#fafafa" stroke="#333" stroke-width="2"/>
+      <rect x="215" y="185" width="90" height="30" fill="#ddd" stroke="#333" stroke-width="1"/>
+      <rect x="215" y="185" width="{batt_fill}" height="30" fill="#2ecc71"/>
+      <text x="260" y="255" text-anchor="middle" font-size="14">Battery ({soc:.1f}%)</text>
 
-      <!-- Industry -->
-      <rect x="240" y="120" width="60" height="40" fill="#cfcfcf" stroke="#333"/>
-      <text x="270" y="145" text-anchor="middle" font-size="12">Industry</text>
+      <!-- Node Bus -->
+      <circle cx="400" cy="140" r="25" fill="#ffffff" stroke="#333" stroke-width="3"/>
+      <text x="400" y="145" text-anchor="middle" font-size="14">Node</text>
 
-      <!-- Grid -->
-      <rect x="450" y="80" width="80" height="40" fill="#cce5ff" stroke="#333"/>
-      <text x="490" y="105" text-anchor="middle" font-size="12">Grid</text>
+      <!-- House Load -->
+      <polygon points="550,60 590,60 570,40" fill="#e0e0e0" stroke="#333" stroke-width="2"/>
+      <rect x="550" y="60" width="40" height="40" fill="#e0e0e0" stroke="#333" stroke-width="2"/>
+      <text x="570" y="115" text-anchor="middle" font-size="14">House</text>
 
-      <!-- PV → Load -->
-      <line x1="130" y1="60" x2="250" y2="60" stroke="#2ecc71" stroke-width="3"/>
-      <text x="190" y="50" font-size="10">PV→Load {pv_to_load:.1f} kW</text>
+      <!-- Industry Load -->
+      <rect x="540" y="160" width="60" height="60" fill="#cfcfcf" stroke="#333" stroke-width="2"/>
+      <text x="570" y="235" text-anchor="middle" font-size="14">Industry</text>
 
-      <!-- PV → Battery -->
-      <line x1="90" y1="80" x2="90" y2="120" stroke="#f39c12" stroke-width="3"/>
-      <text x="100" y="100" font-size="10">PV→Battery {pv_to_battery:.1f} kW</text>
+      <!-- Grid Transformer -->
+      <rect x="700" y="110" width="100" height="60" fill="#cce5ff" stroke="#333" stroke-width="2"/>
+      <text x="750" y="145" text-anchor="middle" font-size="14">Grid</text>
 
-      <!-- PV → Grid -->
-      <line x1="130" y1="60" x2="450" y2="100" stroke="#3498db" stroke-width="3"/>
-      <text x="300" y="80" font-size="10">PV→Grid {pv_to_grid:.1f} kW</text>
+      <!-- Lines + Arrows -->
 
-      <!-- Battery → Load -->
-      <line x1="130" y1="140" x2="250" y2="140" stroke="#e67e22" stroke-width="3"/>
-      <text x="190" y="130" font-size="10">Batt→Load {battery_to_load:.1f} kW</text>
+      <!-- PV → Inverter -->
+      <line x1="160" y1="75" x2="200" y2="75" stroke="#2ecc71" stroke-width="4"/>
+      <polygon points="200,75 190,70 190,80" fill="#2ecc71"/>
 
-      <!-- Grid → Load -->
-      <line x1="450" y1="100" x2="250" y2="100" stroke="#2980b9" stroke-width="3"/>
-      <text x="350" y="90" font-size="10">Grid→Load {grid_to_load:.1f} kW</text>
+      <!-- Inverter → Node -->
+      <line x1="280" y1="75" x2="375" y2="140" stroke="#2ecc71" stroke-width="4"/>
+      <polygon points="375,140 365,135 365,145" fill="#2ecc71"/>
+      <text x="310" y="105" font-size="12">PV→Node {pv:.1f} kW</text>
+
+      <!-- Battery → Node -->
+      <line x1="320" y1="200" x2="375" y2="140" stroke="#e67e22" stroke-width="4"/>
+      <polygon points="375,140 365,135 365,145" fill="#e67e22"/>
+      <text x="330" y="170" font-size="12">Batt→Node {battery_to_load:.1f} kW</text>
+
+      <!-- Grid → Node -->
+      <line x1="700" y1="140" x2="425" y2="140" stroke="#2980b9" stroke-width="4"/>
+      <polygon points="425,140 435,135 435,145" fill="#2980b9"/>
+      <text x="600" y="130" font-size="12">Grid→Node {grid_to_load:.1f} kW</text>
+
+      <!-- Node → House -->
+      <line x1="425" y1="140" x2="550" y2="80" stroke="#333" stroke-width="3"/>
+      <polygon points="550,80 540,75 540,85" fill="#333"/>
+      <text x="480" y="100" font-size="12">Node→House {pv_to_load:.1f} kW</text>
+
+      <!-- Node → Industry -->
+      <line x1="425" y1="140" x2="540" y2="190" stroke="#333" stroke-width="3"/>
+      <polygon points="540,190 530,185 530,195" fill="#333"/>
+      <text x="480" y="170" font-size="12">Node→Industry {load:.1f} kW</text>
 
     </svg>
     """
@@ -448,6 +474,9 @@ flows = {
     "battery_to_load": max(0, load_kw - pv_total - gi),
     "grid_to_load": gi
 }
+
+st.markdown("## 🗺️ Realistic EMS Grid Model")
+st.markdown(render_ems_grid(node, flows), unsafe_allow_html=True)
 
 st.markdown("## 🗺️ Realistic Grid Model")
 st.markdown(render_realistic_grid(node, flows), unsafe_allow_html=True)
