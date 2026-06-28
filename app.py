@@ -43,7 +43,7 @@ def get_irradiance_curve(mode):
 # STREAMLIT UI
 # -----------------------------
 st.set_page_config(page_title="Grid Simulation Dashboard", layout="wide")
-st.title("⚡ Multi‑Node Grid Simulation Dashboard")
+st.title("⚡ Alex's Multi‑Node Grid Simulation Dashboard")
 
 # -----------------------------
 # CONTROL DASHBOARD (SIDEBAR)
